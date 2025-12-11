@@ -141,6 +141,9 @@ This bot is for educational purposes. Use at your own risk. Always:
 - Ensure `models.txt` exists
 - Check file format: `fileName|fileUrl`
 - Run `model.py` to generate default models
+- - Ensure `datasets.txt` exists
+- Check file format: `fileName|fileUrl`
+- Run `dataset.py` to generate default datasets
 
 ## 📝 License
 
