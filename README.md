@@ -82,8 +82,8 @@ python bot.py
 The bot will:
 1. Load your accounts and API key
 2. Process each account sequentially
-3. Submit 3 models per account per cycle
-4. Rotate to the next 3 models in the next cycle
+3. Submit 3 models & 3 datasets per account per cycle
+4. Rotate to the next 3 models & 3 datasets in the next cycle
 5. Wait 24 hours before starting a new cycle
 6. Repeat indefinitely
 
@@ -92,10 +92,11 @@ To fetch models from Hugging Face:
 ```bash
 python model.py
 ```
+```bash
 python dataset.py
 ```
 
-This will generate a `models.txt` file with 1000 models sorted by downloads.
+This will generate a `models.txt & datasets.txt` file with 1000 models sorted by downloads.
 
 ## 📊 How It Works
 
@@ -110,7 +111,7 @@ This will generate a `models.txt` file with 1000 models sorted by downloads.
    - Tracks success/failure rates
 
 3. **Cycle Management**:
-   - Uses 3 models per cycle
+   - Uses 3 models & 3 datasets per cycle
    - Rotates through all available models
    - Saves progress to `progress.txt`
    - Waits 24 hours between cycles
@@ -144,12 +145,6 @@ The bot provides detailed statistics:
 - **Per model**: ~1-2 minutes (including captcha)
 - **Per account**: ~3-6 minutes (3 models)
 - **Cycle interval**: 24 hours
-
-## 🔗 Links
-
-- **Humanoid Network**: https://prelaunch.humanoidnetwork.org/ref/68CMPK
-- **2Captcha**: https://2captcha.com/
-- **Hugging Face**: https://huggingface.co/
 
 ## ⚠️ Disclaimer
 
