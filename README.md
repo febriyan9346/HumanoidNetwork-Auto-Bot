@@ -59,20 +59,6 @@ Add your Ethereum private keys (one per line):
 
 ⚠️ **Security Warning**: Never share your private keys! Keep this file secure.
 
-### 3. models.txt
-The bot comes with default models. You can:
-- Use the default models (automatically created)
-- Add your own models (format: `fileName|fileUrl`)
-- Generate a large list using `model.py`
-
-Example:
-```
-microsoft/VibeVoice-Realtime-0.5B|https://huggingface.co/microsoft/VibeVoice-Realtime-0.5B
-Tongyi-MAI/Z-Image-Turbo|https://huggingface.co/Tongyi-MAI/Z-Image-Turbo
-```
-
-## 🎮 Usage
-
 ### Basic Usage
 Run the main bot:
 ```bash
@@ -115,21 +101,6 @@ This will generate a `models.txt & datasets.txt` file with 1000 models sorted by
    - Rotates through all available models
    - Saves progress to `progress.txt`
    - Waits 24 hours between cycles
-
-## 📁 File Structure
-
-```
-HumanoidNetwork-Auto-Bot/
-│
-├── bot.py              # Main bot script
-├── model.py            # Model fetcher from Hugging Face
-├── requirements.txt    # Python dependencies
-├── accounts.txt        # Your private keys
-├── 2captcha.txt       # Your 2Captcha API key
-├── models.txt         # Training models list
-├── progress.txt       # Auto-generated progress tracker
-└── README.md          # This file
-```
 
 ## 📈 Statistics
 
