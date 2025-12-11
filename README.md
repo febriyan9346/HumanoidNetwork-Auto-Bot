@@ -92,6 +92,8 @@ To fetch models from Hugging Face:
 ```bash
 python model.py
 ```
+python dataset.py
+```
 
 This will generate a `models.txt` file with 1000 models sorted by downloads.
 
