@@ -1,0 +1,4 @@
+requests==2.31.0
+eth-account==0.11.0
+web3==6.11.3
+colorama==0.4.6

@@ -1,0 +1,12 @@
+# Add your Ethereum private keys here (one per line)
+# Format: 0x followed by 64 hexadecimal characters
+# Example:
+# 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+# 0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890
+
+# ⚠️ SECURITY WARNING:
+# Never share this file with anyone!
+# Never commit this file to public repositories!
+# Use dedicated wallets for automation!
+
+# Add your private keys below:
