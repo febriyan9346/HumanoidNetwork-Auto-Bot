@@ -465,7 +465,7 @@ def print_banner():
     banner = f"""
 {Colors.HEADER}{Colors.BOLD}
 ╔═══════════════════════════════════════════════════════╗
-║                HUMANOID NETWORK AUTO BOT                ║
+║                HUMANOID NETWORK AUTO BOT              ║
 ╚═══════════════════════════════════════════════════════╝
 {Colors.RESET}"""
     print(banner)
