@@ -105,7 +105,6 @@ The bot provides detailed statistics:
 This bot is for educational purposes. Use at your own risk. Always:
 - Keep your private keys secure
 - Use dedicated wallets for automation
-- Monitor your 2Captcha balance
 - Follow Humanoid Network's terms of service
 
 ## 🐛 Troubleshooting
