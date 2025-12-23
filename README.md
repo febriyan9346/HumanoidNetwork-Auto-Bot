@@ -10,7 +10,6 @@ An automated bot for Humanoid Network training submissions. This bot handles aut
 ## 🌟 Features
 
 - ✅ Automatic wallet authentication
-- ✅ 2Captcha integration for reCAPTCHA solving
 - ✅ Multi-account support
 - ✅ Automatic model rotation (3 models per cycle)
 - ✅ 24-hour cycle automation
@@ -21,7 +20,6 @@ An automated bot for Humanoid Network training submissions. This bot handles aut
 ## 📋 Prerequisites
 
 - Python 3.7 or higher
-- 2Captcha API key
 - Ethereum private keys
 - Internet connection
 
@@ -42,15 +40,7 @@ pip install -r requirements.txt
 
 ## ⚙️ Configuration
 
-### 1. 2captcha.txt
-Add your 2Captcha API key:
-```
-your_2captcha_api_key_here
-```
-
-Get your API key from: https://2captcha.com/
-
-### 2. accounts.txt
+### 1. accounts.txt
 Add your Ethereum private keys (one per line):
 ```
 0x1234567890abcdef...
@@ -91,12 +81,7 @@ This will generate a `models.txt & datasets.txt` file with 1000 models sorted by
    - Signs message with private key
    - Authenticates and receives token
 
-2. **Training Submission**:
-   - Solves reCAPTCHA for each model
-   - Submits training data to API
-   - Tracks success/failure rates
-
-3. **Cycle Management**:
+2. **Cycle Management**:
    - Uses 3 models & 3 datasets per cycle
    - Rotates through all available models
    - Saves progress to `progress.txt`
@@ -112,8 +97,6 @@ The bot provides detailed statistics:
 
 ## ⏰ Timing
 
-- **Captcha solving**: ~30-60 seconds per captcha
-- **Per model**: ~1-2 minutes (including captcha)
 - **Per account**: ~3-6 minutes (3 models)
 - **Cycle interval**: 24 hours
 
@@ -126,11 +109,6 @@ This bot is for educational purposes. Use at your own risk. Always:
 - Follow Humanoid Network's terms of service
 
 ## 🐛 Troubleshooting
-
-**Captcha fails:**
-- Check your 2Captcha API key
-- Ensure you have sufficient balance
-- Check your internet connection
 
 **Authentication fails:**
 - Verify your private key format
