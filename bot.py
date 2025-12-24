@@ -18,6 +18,7 @@ class Colors:
     HEADER = Fore.MAGENTA
     WALLET = Fore.BLUE
     DATASET = Fore.LIGHTBLUE_EX
+    POINTS = Fore.LIGHTYELLOW_EX
     RESET = Style.RESET_ALL
     BOLD = Style.BRIGHT
 
@@ -253,12 +254,6 @@ class HumanoidAuthBot:
             if not token:
                 return None
             print(f"{Colors.SUCCESS}├─ ✓ Login successful!{Colors.RESET}")
-            print(f"{Colors.INFO}├─ Getting user info...{Colors.RESET}")
-            user_info = self.get_user_info(token)
-            if user_info:
-                points = user_info.get('points', 0)
-                referral_code = user_info.get('referralCode', 'N/A')
-                print(f"{Colors.SUCCESS}├─ ✓ Points: {points} | Referral: {referral_code}{Colors.RESET}")
             return token
         except Exception as e:
             print(f"{Colors.ERROR}├─ ✗ Login failed: {str(e)[:50]}{Colors.RESET}")
@@ -274,10 +269,21 @@ class HumanoidAuthBot:
             print(f"{Colors.HEADER}Account {index}/{total}{Colors.RESET}")
             print(f"{Colors.WALLET}Wallet: {wallet_address}{Colors.RESET}")
             print(f"{Colors.HEADER}{'─' * 60}{Colors.RESET}")
+            
+            # Login and get initial user info
             token = self.login(private_key)
             if not token:
                 print(f"{Colors.ERROR}└─ ✗ Process failed at login{Colors.RESET}")
                 return False
+            
+            print(f"{Colors.INFO}├─ Getting initial user info...{Colors.RESET}")
+            initial_user_info = self.get_user_info(token)
+            initial_points = 0
+            if initial_user_info:
+                initial_points = initial_user_info.get('totalPoints', 0)
+                referral_code = initial_user_info.get('user', {}).get('referralCode', 'N/A')
+                print(f"{Colors.SUCCESS}├─ ✓ Initial Points: {initial_points} | Referral: {referral_code}{Colors.RESET}")
+            
             successful_trainings = 0
             failed_trainings = 0
             print(f"\n{Colors.INFO}┌─ Starting MODEL submissions ({len(models)} models){Colors.RESET}")
@@ -294,6 +300,7 @@ class HumanoidAuthBot:
                     failed_trainings += 1
                 if i < len(models):
                     time.sleep(2)
+            
             print(f"\n{Colors.DATASET}┌─ Starting DATASET submissions ({len(datasets)} datasets){Colors.RESET}")
             for i, dataset in enumerate(datasets, 1):
                 print(f"{Colors.DATASET}│{Colors.RESET}")
@@ -308,11 +315,30 @@ class HumanoidAuthBot:
                     failed_trainings += 1
                 if i < len(datasets):
                     time.sleep(2)
+            
+            # Get final user info after all submissions
+            print(f"\n{Colors.INFO}├─ Getting final user info...{Colors.RESET}")
+            final_user_info = self.get_user_info(token)
+            final_points = 0
+            points_earned = 0
+            
+            if final_user_info:
+                final_points = final_user_info.get('totalPoints', 0)
+                points_earned = final_points - initial_points
+            
             total_items = len(models) + len(datasets)
             print(f"{Colors.INFO}│{Colors.RESET}")
             print(f"{Colors.INFO}└─ Training Summary:{Colors.RESET}")
             print(f"   {Colors.SUCCESS}✓ Successful: {successful_trainings}/{total_items}{Colors.RESET}")
             print(f"   {Colors.ERROR}✗ Failed: {failed_trainings}/{total_items}{Colors.RESET}")
+            print(f"\n{Colors.POINTS}{'─' * 60}{Colors.RESET}")
+            print(f"{Colors.POINTS}{Colors.BOLD}POINTS SUMMARY{Colors.RESET}")
+            print(f"{Colors.POINTS}{'─' * 60}{Colors.RESET}")
+            print(f"{Colors.POINTS}├─ Initial Points  : {initial_points}{Colors.RESET}")
+            print(f"{Colors.SUCCESS}├─ Points Earned   : +{points_earned}{Colors.RESET}")
+            print(f"{Colors.POINTS}{Colors.BOLD}└─ TOTAL POINTS    : {final_points}{Colors.RESET}")
+            print(f"{Colors.POINTS}{'─' * 60}{Colors.RESET}")
+            
             return successful_trainings > 0
         except Exception as e:
             print(f"{Colors.ERROR}└─ ✗ Process error: {str(e)[:50]}{Colors.RESET}")
