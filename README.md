@@ -47,6 +47,16 @@ Add your Ethereum private keys (one per line):
 0xabcdef1234567890...
 ```
 
+### 2. Setup Proxies (Optional)
+
+Create a file named `proxy.txt` if you want to use proxies (one per line):
+
+```
+http://user:pass@ip:port
+http://user:pass@ip:port
+socks5://user:pass@ip:port
+```
+
 ⚠️ **Security Warning**: Never share your private keys! Keep this file secure.
 
 ### Basic Usage
