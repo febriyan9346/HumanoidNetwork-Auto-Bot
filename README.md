@@ -63,29 +63,12 @@ The bot will:
 5. Wait 24 hours before starting a new cycle
 6. Repeat indefinitely
 
-### Generate More Models
-To fetch models from Hugging Face:
-```bash
-python model.py
-```
-```bash
-python dataset.py
-```
-
-This will generate a `models.txt & datasets.txt` file with 1000 models sorted by downloads.
-
 ## 📊 How It Works
 
-1. **Authentication**:
+**Authentication**:
    - Gets nonce from API
    - Signs message with private key
    - Authenticates and receives token
-
-2. **Cycle Management**:
-   - Uses 3 models & 3 datasets per cycle
-   - Rotates through all available models
-   - Saves progress to `progress.txt`
-   - Waits 24 hours between cycles
 
 ## 📈 Statistics
 
@@ -113,14 +96,6 @@ This bot is for educational purposes. Use at your own risk. Always:
 - Verify your private key format
 - Ensure private key starts with `0x`
 - Check API connectivity
-
-**No models found:**
-- Ensure `models.txt` exists
-- Check file format: `fileName|fileUrl`
-- Run `model.py` to generate default models
-- - Ensure `datasets.txt` exists
-- Check file format: `fileName|fileUrl`
-- Run `dataset.py` to generate default datasets
 
 ## 📝 License
 
