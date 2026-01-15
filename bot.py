@@ -82,15 +82,6 @@ class HumanoidAutoBot:
         
         print(f"[{time_str}] {color}{symbol} {message}{Style.RESET_ALL}")
     
-    def print_banner(self):
-        os.system('clear' if os.name == 'posix' else 'cls')
-        banner = f"""
-{Fore.CYAN}HUMANOID AUTO BOT{Style.RESET_ALL}
-{Fore.WHITE}By: FEBRIYAN{Style.RESET_ALL}
-{Fore.CYAN}============================================================{Style.RESET_ALL}
-"""
-        print(banner)
-    
     def countdown(self, seconds):
         for i in range(seconds, 0, -1):
             hours = i // 3600
@@ -146,6 +137,51 @@ class HumanoidAutoBot:
             self.log(f"Auth error: {str(e)[:50]}", "ERROR")
             return None
 
+    def complete_social_tasks(self, token):
+        self.log("Checking and completing social tasks...", "INFO")
+        
+        tasks_list = [
+            {"id": "1", "name": "Follow HAN on X", "data": {"url": "https://x.com/HumanoidNetwork"}},
+            {"id": "2", "name": "Join Telegram Community", "data": {"url": "https://t.me/TheHumanoidNetwork"}},
+            {"id": "3", "name": "Share on Social Media", "data": {}},
+            {"id": "5", "name": "Join our Discord", "data": {"url": "https://discord.gg/f5C32A89q8"}},
+            {"id": "6", "name": "Follow on Instagram", "data": {"url": "https://www.instagram.com/humanoidnetwork?igsh=MWIwZmpoZnQ5ZGh5bw=="}},
+            {"id": "7", "name": "Subscribe on YouTube", "data": {"url": "https://www.youtube.com/@HumanoidNetwork"}},
+            {"id": "8", "name": "Follow on TikTok", "data": {"url": "https://www.tiktok.com/@humanoidnetwork?is_from_webapp=1&sender_device=pc"}},
+            {"id": "9", "name": "Join our Reddit", "data": {"url": "https://www.reddit.com/user/humanoidNetwork/"}}
+        ]
+
+        tasks_list.sort(key=lambda x: int(x["id"]))
+
+        headers = self.headers.copy()
+        headers["authorization"] = f"Bearer {token}"
+        url = f"{self.base_url}/tasks"
+
+        for task in tasks_list:
+            try:
+                payload = {
+                    "taskId": task["id"],
+                    "data": task["data"]
+                }
+                
+                proxy = self.get_next_proxy() if self.use_proxy else None
+                response = self.session.post(url, json=payload, headers=headers, proxies=proxy, timeout=20)
+                
+                if response.status_code == 200:
+                    resp_json = response.json()
+                    if resp_json.get("completed"):
+                        self.log(f"Task {task['id']} ({task['name']}) -> COMPLETED", "SUCCESS")
+                    else:
+                        self.log(f"Task {task['id']} ({task['name']}) -> ALREADY DONE", "SUCCESS")
+                elif response.status_code == 400:
+                    self.log(f"Task {task['id']} ({task['name']}) -> ALREADY COMPLETED", "SUCCESS")
+                else:
+                    self.log(f"Task {task['id']} ({task['name']}) -> ERROR {response.status_code}", "WARNING")
+                
+                time.sleep(1)
+            except Exception as e:
+                self.log(f"Task {task['id']} ({task['name']}) -> FAILED: {str(e)[:30]}", "WARNING")
+
     def get_training_progress(self, token):
         try:
             url = f"{self.base_url}/training/progress"
@@ -183,7 +219,6 @@ class HumanoidAutoBot:
 
     def scrape_huggingface_models(self):
         try:
-            self.log("Scraping models from HuggingFace...", "INFO")
             url = "https://huggingface.co/api/models"
             proxy = self.get_next_proxy() if self.use_proxy else None
             response = self.session.get(url, proxies=proxy, timeout=30)
@@ -197,7 +232,6 @@ class HumanoidAutoBot:
                             "fileType": "model",
                             "fileUrl": f"https://huggingface.co/{model['id']}"
                         })
-                self.log(f"Scraped {len(models)} models from HuggingFace", "SUCCESS")
                 return models
             raise Exception("Failed to scrape")
         except:
@@ -205,7 +239,6 @@ class HumanoidAutoBot:
 
     def scrape_huggingface_datasets(self):
         try:
-            self.log("Scraping datasets from HuggingFace...", "INFO")
             url = "https://huggingface.co/api/datasets"
             proxy = self.get_next_proxy() if self.use_proxy else None
             response = self.session.get(url, proxies=proxy, timeout=30)
@@ -219,7 +252,6 @@ class HumanoidAutoBot:
                             "fileType": "dataset",
                             "fileUrl": f"https://huggingface.co/datasets/{dataset['id']}"
                         })
-                self.log(f"Scraped {len(datasets)} datasets from HuggingFace", "SUCCESS")
                 return datasets
             raise Exception("Failed to scrape")
         except:
@@ -300,7 +332,7 @@ class HumanoidAutoBot:
         
         return successful_count
 
-    def process_account(self, private_key, index, total, all_models, all_datasets, run_mode):
+    def process_account(self, private_key, index, total, all_models, all_datasets):
         try:
             if not private_key.startswith('0x'):
                 private_key = '0x' + private_key
@@ -316,6 +348,8 @@ class HumanoidAutoBot:
                 return False
             
             self.log("Login successful!", "SUCCESS")
+
+            self.complete_social_tasks(token)
             
             progress_data = self.get_training_progress(token)
             
@@ -333,25 +367,19 @@ class HumanoidAutoBot:
             initial_points = 0
             if initial_user_info:
                 initial_points = initial_user_info.get('totalPoints', 0)
-                referral_code = initial_user_info.get('user', {}).get('referralCode', 'N/A')
-                self.log(f"Initial Points: {initial_points}", "INFO")
+                self.log(f"Current Points: {initial_points}", "INFO")
             
-            models_submitted = 0
-            datasets_submitted = 0
+            if models_remaining > 0:
+                self.log(f"Processing {models_remaining} models...", "INFO")
+                self.submit_items(token, all_models, models_remaining, "model")
+            else:
+                self.log("Daily Models task already completed! Skipping...", "SUCCESS")
             
-            if run_mode in ["models", "all"]:
-                if models_remaining > 0:
-                    self.log(f"Processing {models_remaining} models...", "INFO")
-                    models_submitted = self.submit_items(token, all_models, models_remaining, "model")
-                else:
-                    self.log("Daily Models task already completed! Skipping...", "SUCCESS")
-            
-            if run_mode in ["datasets", "all"]:
-                if datasets_remaining > 0:
-                    self.log(f"Processing {datasets_remaining} datasets...", "INFO")
-                    datasets_submitted = self.submit_items(token, all_datasets, datasets_remaining, "dataset")
-                else:
-                    self.log("Daily Datasets task already completed! Skipping...", "SUCCESS")
+            if datasets_remaining > 0:
+                self.log(f"Processing {datasets_remaining} datasets...", "INFO")
+                self.submit_items(token, all_datasets, datasets_remaining, "dataset")
+            else:
+                self.log("Daily Datasets task already completed! Skipping...", "SUCCESS")
             
             final_user_info = self.get_user_info(token)
             final_points = 0
@@ -362,7 +390,7 @@ class HumanoidAutoBot:
                 points_earned = final_points - initial_points
             
             self.log(f"Account processing finished", "SUCCESS")
-            self.log(f"Total Points: {final_points} | Earned: +{points_earned}", "SUCCESS")
+            self.log(f"Total Points: {final_points} | Earned in this run: +{points_earned}", "SUCCESS")
             
             return True
         except Exception as e:
@@ -384,7 +412,7 @@ def main():
 {Fore.CYAN}HUMANOID AUTO BOT{Style.RESET_ALL}
 {Fore.WHITE}By: FEBRIYAN{Style.RESET_ALL}
 {Fore.CYAN}============================================================{Style.RESET_ALL}
-{Fore.CYAN}============================================================{Style.RESET_ALL}
+
 {Fore.YELLOW}Select Proxy Mode:{Style.RESET_ALL}
 {Fore.WHITE}1. Run with proxy{Style.RESET_ALL}
 {Fore.WHITE}2. Run without proxy{Style.RESET_ALL}
@@ -397,49 +425,16 @@ def main():
     if proxy_choice == "1":
         use_proxy = True
     elif proxy_choice != "2":
-        print(f"{Fore.RED}[ERROR] Invalid choice. Running without proxy.{Style.RESET_ALL}")
-        time.sleep(2)
+        pass
     
-    os.system('clear' if os.name == 'posix' else 'cls')
-    print(f"""
-{Fore.CYAN}HUMANOID AUTO BOT{Style.RESET_ALL}
-{Fore.WHITE}By: FEBRIYAN{Style.RESET_ALL}
-{Fore.CYAN}============================================================{Style.RESET_ALL}
-{Fore.CYAN}============================================================{Style.RESET_ALL}
-{Fore.YELLOW}Select Run Mode:{Style.RESET_ALL}
-{Fore.WHITE}1. Run models only{Style.RESET_ALL}
-{Fore.WHITE}2. Run datasets only{Style.RESET_ALL}
-{Fore.WHITE}3. Run all (models + datasets){Style.RESET_ALL}
-{Fore.CYAN}============================================================{Style.RESET_ALL}
-""")
-    
-    mode_choice = input(f"{Fore.GREEN}Enter your choice (1/2/3): {Style.RESET_ALL}").strip()
-    
-    run_mode = "all"
-    if mode_choice == "1":
-        run_mode = "models"
-    elif mode_choice == "2":
-        run_mode = "datasets"
-    elif mode_choice == "3":
-        run_mode = "all"
-    else:
-        print(f"{Fore.RED}[ERROR] Invalid choice. Running all mode.{Style.RESET_ALL}")
-        time.sleep(2)
+    print(f"\n{Fore.CYAN}============================================================{Style.RESET_ALL}")
     
     bot = HumanoidAutoBot(use_proxy=use_proxy)
-    bot.print_banner()
     
     if use_proxy:
         bot.log("Running with proxy mode", "INFO")
     else:
         bot.log("Running without proxy mode", "INFO")
-    
-    if run_mode == "models":
-        bot.log("Run Mode: MODELS ONLY", "INFO")
-    elif run_mode == "datasets":
-        bot.log("Run Mode: DATASETS ONLY", "INFO")
-    else:
-        bot.log("Run Mode: ALL (Models + Datasets)", "INFO")
     
     accounts = read_accounts("accounts.txt")
     if not accounts:
@@ -448,24 +443,8 @@ def main():
     
     bot.log(f"Loaded {len(accounts)} accounts successfully", "SUCCESS")
     
-    print(f"\n{Fore.CYAN}============================================================{Style.RESET_ALL}")
-    bot.log("Scraping data from HuggingFace...", "INFO")
-    print(f"{Fore.CYAN}============================================================{Style.RESET_ALL}")
-    
-    all_models = []
-    all_datasets = []
-    
-    if run_mode in ["models", "all"]:
-        all_models = bot.scrape_huggingface_models()
-        bot.log(f"Total models available: {len(all_models)}", "INFO")
-    
-    if run_mode in ["datasets", "all"]:
-        all_datasets = bot.scrape_huggingface_datasets()
-        bot.log(f"Total datasets available: {len(all_datasets)}", "INFO")
-    
-    bot.log("Bot will automatically check remaining daily limit per account", "INFO")
-    
-    print(f"\n{Fore.CYAN}============================================================{Style.RESET_ALL}\n")
+    all_models = bot.scrape_huggingface_models()
+    all_datasets = bot.scrape_huggingface_datasets()
     
     cycle = 1
     
@@ -477,7 +456,7 @@ def main():
         failed = 0
         
         for i, private_key in enumerate(accounts, 1):
-            if bot.process_account(private_key, i, len(accounts), all_models, all_datasets, run_mode):
+            if bot.process_account(private_key, i, len(accounts), all_models, all_datasets):
                 successful += 1
             else:
                 failed += 1
