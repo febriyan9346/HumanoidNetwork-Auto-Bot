@@ -313,9 +313,7 @@ class HumanoidAutoBot:
         successful_count = 0
         random.shuffle(items)
         
-        items_to_try = items[:target_count + 5]
-        
-        for item in items_to_try:
+        for item in items:
             if successful_count >= target_count:
                 break
                 
