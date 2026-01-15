@@ -145,6 +145,21 @@ class HumanoidAutoBot:
         except Exception as e:
             self.log(f"Auth error: {str(e)[:50]}", "ERROR")
             return None
+
+    def get_training_progress(self, token):
+        try:
+            url = f"{self.base_url}/training/progress"
+            headers = self.headers.copy()
+            headers["authorization"] = f"Bearer {token}"
+            proxy = self.get_next_proxy() if self.use_proxy else None
+            
+            response = self.session.get(url, headers=headers, proxies=proxy, timeout=30)
+            if response.status_code == 200:
+                return response.json()
+            return None
+        except Exception as e:
+            self.log(f"Progress check error: {str(e)[:50]}", "ERROR")
+            return None
     
     def submit_training(self, token, item_data):
         try:
@@ -266,7 +281,9 @@ class HumanoidAutoBot:
         successful_count = 0
         random.shuffle(items)
         
-        for item in items:
+        items_to_try = items[:target_count + 5]
+        
+        for item in items_to_try:
             if successful_count >= target_count:
                 break
                 
@@ -283,7 +300,7 @@ class HumanoidAutoBot:
         
         return successful_count
 
-    def process_account(self, private_key, index, total, all_models, all_datasets, run_mode, models_per_account, datasets_per_account):
+    def process_account(self, private_key, index, total, all_models, all_datasets, run_mode):
         try:
             if not private_key.startswith('0x'):
                 private_key = '0x' + private_key
@@ -300,23 +317,41 @@ class HumanoidAutoBot:
             
             self.log("Login successful!", "SUCCESS")
             
+            progress_data = self.get_training_progress(token)
+            
+            models_remaining = 3
+            datasets_remaining = 3
+            
+            if progress_data:
+                models_remaining = progress_data['daily']['models']['remaining']
+                datasets_remaining = progress_data['daily']['datasets']['remaining']
+                self.log(f"Status: {models_remaining} Models left | {datasets_remaining} Datasets left", "INFO")
+            else:
+                self.log("Failed to fetch progress, assuming full limit (3/3)", "WARNING")
+
             initial_user_info = self.get_user_info(token)
             initial_points = 0
             if initial_user_info:
                 initial_points = initial_user_info.get('totalPoints', 0)
                 referral_code = initial_user_info.get('user', {}).get('referralCode', 'N/A')
-                self.log(f"Initial Points: {initial_points} | Referral: {referral_code}", "INFO")
+                self.log(f"Initial Points: {initial_points}", "INFO")
             
             models_submitted = 0
             datasets_submitted = 0
             
             if run_mode in ["models", "all"]:
-                self.log(f"Processing models (target: {models_per_account})...", "INFO")
-                models_submitted = self.submit_items(token, all_models, models_per_account, "model")
+                if models_remaining > 0:
+                    self.log(f"Processing {models_remaining} models...", "INFO")
+                    models_submitted = self.submit_items(token, all_models, models_remaining, "model")
+                else:
+                    self.log("Daily Models task already completed! Skipping...", "SUCCESS")
             
             if run_mode in ["datasets", "all"]:
-                self.log(f"Processing datasets (target: {datasets_per_account})...", "INFO")
-                datasets_submitted = self.submit_items(token, all_datasets, datasets_per_account, "dataset")
+                if datasets_remaining > 0:
+                    self.log(f"Processing {datasets_remaining} datasets...", "INFO")
+                    datasets_submitted = self.submit_items(token, all_datasets, datasets_remaining, "dataset")
+                else:
+                    self.log("Daily Datasets task already completed! Skipping...", "SUCCESS")
             
             final_user_info = self.get_user_info(token)
             final_points = 0
@@ -326,14 +361,7 @@ class HumanoidAutoBot:
                 final_points = final_user_info.get('totalPoints', 0)
                 points_earned = final_points - initial_points
             
-            total_submitted = models_submitted + datasets_submitted
-            target_total = 0
-            if run_mode in ["models", "all"]:
-                target_total += models_per_account
-            if run_mode in ["datasets", "all"]:
-                target_total += datasets_per_account
-            
-            self.log(f"All tasks completed: {total_submitted}/{target_total}", "SUCCESS")
+            self.log(f"Account processing finished", "SUCCESS")
             self.log(f"Total Points: {final_points} | Earned: +{points_earned}", "SUCCESS")
             
             return True
@@ -435,12 +463,7 @@ def main():
         all_datasets = bot.scrape_huggingface_datasets()
         bot.log(f"Total datasets available: {len(all_datasets)}", "INFO")
     
-    if run_mode == "models":
-        bot.log("Bot will use 3 models per account", "INFO")
-    elif run_mode == "datasets":
-        bot.log("Bot will use 3 datasets per account", "INFO")
-    else:
-        bot.log("Bot will use 3 models + 3 datasets per account", "INFO")
+    bot.log("Bot will automatically check remaining daily limit per account", "INFO")
     
     print(f"\n{Fore.CYAN}============================================================{Style.RESET_ALL}\n")
     
@@ -454,14 +477,14 @@ def main():
         failed = 0
         
         for i, private_key in enumerate(accounts, 1):
-            if bot.process_account(private_key, i, len(accounts), all_models, all_datasets, run_mode, 3, 3):
+            if bot.process_account(private_key, i, len(accounts), all_models, all_datasets, run_mode):
                 successful += 1
             else:
                 failed += 1
             
             if i < len(accounts):
                 print(f"{Fore.WHITE}............................................................{Style.RESET_ALL}")
-                time.sleep(2)
+                time.sleep(1)
         
         print(f"{Fore.CYAN}------------------------------------------------------------{Style.RESET_ALL}")
         bot.log(f"Cycle #{cycle} Complete | Success: {successful}/{len(accounts)}", "CYCLE")
