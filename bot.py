@@ -14,7 +14,7 @@ init(autoreset=True)
 
 class HumanoidAutoBot:
     def __init__(self, use_proxy=False):
-        self.base_url = "https://prelaunch.humanoidnetwork.org/api"
+        self.base_url = "https://app.humanoidnetwork.org/api"
         self.use_proxy = use_proxy
         self.proxies_list = []
         self.current_proxy_index = 0
@@ -23,8 +23,8 @@ class HumanoidAutoBot:
             "accept": "*/*",
             "accept-language": "en-US,en;q=0.9",
             "content-type": "application/json",
-            "origin": "https://prelaunch.humanoidnetwork.org",
-            "referer": "https://prelaunch.humanoidnetwork.org/",
+            "origin": "https://app.humanoidnetwork.org",
+            "referer": "https://app.humanoidnetwork.org/",
         }
         
         if self.use_proxy:
@@ -202,7 +202,7 @@ class HumanoidAutoBot:
             url = f"{self.base_url}/training"
             headers = self.headers.copy()
             headers["authorization"] = f"Bearer {token}"
-            headers["referer"] = "https://prelaunch.humanoidnetwork.org/training"
+            headers["referer"] = "https://app.humanoidnetwork.org/training"
             payload = {
                 "fileName": item_data["fileName"],
                 "fileType": item_data["fileType"],
